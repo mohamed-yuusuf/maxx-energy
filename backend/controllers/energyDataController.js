@@ -1,7 +1,9 @@
+// Import the database connection and necessary modules
 const db = require('../db/db');
 const fs = require('fs');
 const path = require('path');
 
+// Define time columns representing 30-minute intervals
 const timeColumns = [
     "00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30",
     "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30",
@@ -11,8 +13,10 @@ const timeColumns = [
     "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"
 ];
 
+// Format time column names as SQL-safe strings
 const times = timeColumns.map(t => `"${t}"`).join(', ');
 
+// Function to log invalid input data into a log file
 const logInvalidEntry = (data, errors) => {
     const logEntry = {
         timestamp: new Date().toISOString(),
@@ -23,18 +27,22 @@ const logInvalidEntry = (data, errors) => {
     fs.appendFileSync(logPath, JSON.stringify(logEntry) + '\n');
 };
 
+// Check if a given date is valid
 const isValidDate = (date) => !isNaN(Date.parse(date));
 
+// Mask account number based on role for privacy/security
 const getAccountNumberByRole = (account_no, role) => {
     return role === 'Executive' ? account_no : maskAccountNumber(account_no);
 };
 
+// Return a masked account number (e.g., ********0001)
 const maskAccountNumber = (accountNumber) => {
     const strAccountNumber = accountNumber.toString();
     const maskedCharts = '*'.repeat(strAccountNumber.length - 4);
     return maskedCharts + strAccountNumber.slice(-4);
 };
 
+// Get a list of distinct accounts, paginated, with role-based masking
 exports.getAccounts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -63,6 +71,7 @@ exports.getAccounts = async (req, res) => {
     }
 };
 
+// Get only distinct account numbers (used for dropdowns or filters)
 exports.getDistinctAccounts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -87,6 +96,7 @@ exports.getDistinctAccounts = async (req, res) => {
     }
 };
 
+// Return distinct substation and transformer combinations (used for filtering)
 exports.getSubstations = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -111,6 +121,7 @@ exports.getSubstations = async (req, res) => {
     }
 };
 
+// Return energy usage data for a given account in a given date range
 exports.getAccountUsage = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -119,10 +130,12 @@ exports.getAccountUsage = async (req, res) => {
     const { account_no, start_date, end_date } = req.query;
     const validationErrors = [];
 
+    // Validate required query parameters
     if (!account_no) validationErrors.push("Missing account_no");
     if (!start_date || !isValidDate(start_date)) validationErrors.push("Invalid start_date");
     if (!end_date || !isValidDate(end_date)) validationErrors.push("Invalid end_date");
 
+    // Log and return validation errors if any
     if (validationErrors.length > 0) {
         logInvalidEntry(req.query, validationErrors);
         return res.status(400).json({ errors: validationErrors });
