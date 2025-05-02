@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Map from "../Map/Map"
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -38,9 +39,7 @@ const ContactForm = () => {
     e.preventDefault();
     const errors = validateForm();
     if (Object.keys(errors).length === 0) {
-      // Simulate form submission success
       setIsSubmitted(true);
-      // Clear form
       setFormData({ name: '', email: '', message: '' });
     } else {
       setFormErrors(errors);
@@ -48,7 +47,7 @@ const ContactForm = () => {
   };
 
   return (
-    <section className="py-8 px-4 mx-auto max-w-screen-md">
+    <section className="pt-20 py-8 px-4 mx-auto max-w-screen-md">
       <h2 className="text-4xl tracking-tight font-extrabold text-white mb-8">
         Contact Maxx Energy
       </h2>
@@ -113,6 +112,7 @@ const ContactForm = () => {
           Thank you for your message! We will get back to you soon.
         </div>
       )}
+      <Map address="14321 Winter Breeze Dr, Midlothian, VA 23113" />
     </section>
   );
 };
